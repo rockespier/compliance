@@ -1,16 +1,15 @@
 // 1. Necesario para que funcione UseSqlServer()
-using Microsoft.EntityFrameworkCore;
-
-// 2. Necesario para que la API conozca AppDbContext
-using Compliance.Infrastructure;
-using Compliance.Infrastructure.Repositories;
-
 // 3. Necesario para que la API conozca los Casos de Uso y DTOs
 using Compliance.Application;
 using Compliance.Application.Abstractions;
 using Compliance.Application.UseCases;
-using System;
+using Compliance.Application.UseCases.PlanCumplimiento;
+// 2. Necesario para que la API conozca AppDbContext
+using Compliance.Infrastructure;
 using Compliance.Infrastructure.Persistence;
+using Compliance.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,34 +26,61 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IPlanCumplimientoRepository, PlanCumplimientoRepository>();
 builder.Services.AddScoped<MarcarCumplimientoUseCase>();
 
+builder.Services.AddScoped<CrearPlanCumplimientoUseCase>();
+
 var app = builder.Build();
 
 // ============================================================
 // PASO 5: LA CAPA DE PRESENTACIÓN (MINIMAL APIs)
 // ============================================================
 
-// Endpoint para registrar el cumplimiento de un plan
+// Creamos un endpoint POST que recibe el ID del plan por la URL y los datos por el Body (JSON)
 app.MapPost("/api/planes/{planId:guid}/cumplimiento", async (
     Guid planId,
-    MarcarCumplimientoDto request, // Usamos el DTO que generó la IA
-    MarcarCumplimientoUseCase useCase,
-    CancellationToken cancellationToken) => // La IA agregó esto, ¡aprovechémoslo!
+    MarcarCumplimientoDto request, // El DTO inmutable que trae los datos de la red
+    MarcarCumplimientoUseCase useCase, // Inyectamos nuestro caso de uso
+    CancellationToken cancellationToken) => // Token para cancelar peticiones largas
 {
     try
     {
-        // Llamamos al método exacto que generó Copilot
+        // 1. Delegamos toda la responsabilidad al Caso de Uso
         await useCase.ExecuteAsync(planId, request, cancellationToken);
 
+        // 2. Si todo sale bien, devolvemos un HTTP 200 OK
         return Results.Ok(new { Mensaje = "Cumplimiento registrado exitosamente." });
     }
     catch (KeyNotFoundException ex)
     {
-        // La IA lanza esto si no encuentra el plan
+        // Si el plan no existe en la BD, devolvemos un HTTP 404 Not Found
         return Results.NotFound(new { Error = ex.Message });
     }
     catch (ArgumentException ex)
     {
-        // La IA lanza esto si faltan datos
+        // Si hay un error de validación (ej. falta evidencia), devolvemos HTTP 400 Bad Request
+        return Results.BadRequest(new { Error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        // Si ocurre cualquier otro error inesperado, devolvemos HTTP 500 Internal Server Error
+        return Results.Problem(detail: ex.Message, statusCode: 500);
+    }
+});
+
+// Endpoint para CREAR un nuevo plan de cumplimiento
+app.MapPost("/api/planes", async (
+    CrearPlanCumplimientoDto request,
+    CrearPlanCumplimientoUseCase useCase,
+    CancellationToken cancellationToken) =>
+{
+    try
+    {
+        var nuevoPlanId = await useCase.ExecuteAsync(request, cancellationToken);
+
+        // Retornamos un 201 Created junto con el ID del nuevo recurso
+        return Results.Created($"/api/planes/{nuevoPlanId}", new { Id = nuevoPlanId, Mensaje = "Plan creado con éxito." });
+    }
+    catch (ArgumentException ex)
+    {
         return Results.BadRequest(new { Error = ex.Message });
     }
     catch (Exception ex)
