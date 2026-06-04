@@ -41,6 +41,7 @@ jobs:
       - name: 💾 Hacer Commit de los archivos generados
         run: |
           git add .
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "🤖 IA Auto-Fix: Solución generada para el Issue #${{ github.event.issue.number }}"
           git push origin ai-fix-issue-${{ github.event.issue.number }}
 
