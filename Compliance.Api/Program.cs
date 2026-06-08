@@ -9,6 +9,7 @@ using Compliance.Infrastructure;
 using Compliance.Infrastructure.Persistence;
 using Compliance.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,8 +28,26 @@ builder.Services.AddScoped<IPlanCumplimientoRepository, PlanCumplimientoReposito
 builder.Services.AddScoped<MarcarCumplimientoUseCase>();
 
 builder.Services.AddScoped<CrearPlanCumplimientoUseCase>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Compliance API", Version = "v1" });
+});
+
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+// Redirigir automáticamente a Swagger cuando se accede a la raíz
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
 
 // ============================================================
 // PASO 5: LA CAPA DE PRESENTACIÓN (MINIMAL APIs)
@@ -85,6 +104,7 @@ app.MapPost("/api/planes", async (
     }
     catch (Exception ex)
     {
+        // Si ocurre cualquier otro error inesperado, devolvemos HTTP 500 Internal Server Error
         return Results.Problem(detail: ex.Message, statusCode: 500);
     }
 });
