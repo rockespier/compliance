@@ -15,15 +15,15 @@ using System;
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================================================
-// PASO 4.1: CONFIGURACIÓN DE INFRAESTRUCTURA E INYECCIÓN (DI)
+// PASO 4.1: CONFIGURACIï¿½N DE INFRAESTRUCTURA E INYECCIï¿½N (DI)
 // ============================================================
 
 // 1. Registrar el DbContext usando el Connection String del appsettings.json
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Registrar los repositorios y casos de uso (Scoped porque viven por cada petición HTTP)
-// Nota: 'PlanCumplimientoRepository' es la clase concreta que generó Copilot en Infrastructure
+// 2. Registrar los repositorios y casos de uso (Scoped porque viven por cada peticiï¿½n HTTP)
+// Nota: 'PlanCumplimientoRepository' es la clase concreta que generï¿½ Copilot en Infrastructure
 builder.Services.AddScoped<IPlanCumplimientoRepository, PlanCumplimientoRepository>();
 builder.Services.AddScoped<MarcarCumplimientoUseCase>();
 
@@ -36,8 +36,9 @@ builder.Services.AddSwaggerGen(options =>
 
 
 var app = builder.Build();
+var swaggerEnabled = app.Environment.IsDevelopment();
 
-if (app.Environment.IsDevelopment())
+if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -45,12 +46,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Redirigir automáticamente a Swagger cuando se accede a la raíz
-app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+// En desarrollo redirigimos a Swagger; en otros entornos devolvemos un estado simple.
+app.MapGet("/", () =>
+    swaggerEnabled
+        ? Results.Redirect("/swagger")
+        : Results.Ok(new { Mensaje = "Compliance API en ejecucion." }))
+    .ExcludeFromDescription();
 
 
 // ============================================================
-// PASO 5: LA CAPA DE PRESENTACIÓN (MINIMAL APIs)
+// PASO 5: LA CAPA DE PRESENTACIï¿½N (MINIMAL APIs)
 // ============================================================
 
 // Creamos un endpoint POST que recibe el ID del plan por la URL y los datos por el Body (JSON)
@@ -75,7 +80,7 @@ app.MapPost("/api/planes/{planId:guid}/cumplimiento", async (
     }
     catch (ArgumentException ex)
     {
-        // Si hay un error de validación (ej. falta evidencia), devolvemos HTTP 400 Bad Request
+        // Si hay un error de validaciï¿½n (ej. falta evidencia), devolvemos HTTP 400 Bad Request
         return Results.BadRequest(new { Error = ex.Message });
     }
     catch (Exception ex)
@@ -96,7 +101,7 @@ app.MapPost("/api/planes", async (
         var nuevoPlanId = await useCase.ExecuteAsync(request, cancellationToken);
 
         // Retornamos un 201 Created junto con el ID del nuevo recurso
-        return Results.Created($"/api/planes/{nuevoPlanId}", new { Id = nuevoPlanId, Mensaje = "Plan creado con éxito." });
+        return Results.Created($"/api/planes/{nuevoPlanId}", new { Id = nuevoPlanId, Mensaje = "Plan creado con ï¿½xito." });
     }
     catch (ArgumentException ex)
     {

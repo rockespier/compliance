@@ -20,11 +20,11 @@ public class CrearPlanCumplimientoUseCase(IPlanCumplimientoRepository repository
         // 2. Cargar Base Legal y Proyecto desde el repositorio
         var baseLegal = await repository.ObtenerBaseLegalPorIdAsync(dto.BaseLegalId, cancellationToken);
         if (baseLegal is null)
-            throw new KeyNotFoundException($"No existe una Base Legal con ID '{dto.BaseLegalId}'.");
+            throw new InvalidOperationException($"No existe una Base Legal con ID '{dto.BaseLegalId}'.");
 
         var proyecto = await repository.ObtenerProyectoPorIdAsync(dto.ProyectoId, cancellationToken);
         if (proyecto is null)
-            throw new KeyNotFoundException($"No existe un Proyecto con ID '{dto.ProyectoId}'.");
+            throw new ArgumentException($"No existe un Proyecto con ID '{dto.ProyectoId}'.");
 
         // 3. Creación de la Entidad de Dominio
         var nuevoPlan = new PlanDeCumplimiento(

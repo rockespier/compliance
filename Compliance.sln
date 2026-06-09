@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.37314.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Specs", "Specs", "{6C83A596-D32D-B35F-00DD-F0C99B673980}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\Modulo 1\Modulo 1.3\complianceSpec.md = ..\..\Modulo 1\Modulo 1.3\complianceSpec.md
+		Specs\complianceSpec.md = Specs\complianceSpec.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compliance.Domain", "Compliance.Domain\Compliance.Domain.csproj", "{DE177AA4-89B2-47BC-9032-35CD4A98C1BE}"
