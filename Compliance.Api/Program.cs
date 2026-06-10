@@ -70,7 +70,7 @@ app.MapPost("/api/planes/{planId:guid}/cumplimiento", async (
         // 1. Delegamos toda la responsabilidad al Caso de Uso
         await useCase.ExecuteAsync(planId, request, cancellationToken);
 
-        // 2. Si todo sale bien, devolvemos un HTTP 200 OK
+        // 2. Si sale bien, devolvemos un HTTP 200 OK
         return Results.Ok(new { Mensaje = "Cumplimiento registrado exitosamente." });
     }
     catch (KeyNotFoundException ex)
