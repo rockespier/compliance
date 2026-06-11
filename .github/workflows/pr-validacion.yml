@@ -37,14 +37,15 @@ jobs:
       - name: Codex Review
         uses: openai/codex-action@v1
         with:
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          safety-strategy: unsafe
           prompt: |
             Review this pull request.
             Focus on:
             - Bugs
             - Security issues
             - SQL Server performance
-            - Entity Framework queries           
+            - Entity Framework queries
             - Breaking changes
             - Missing tests
             - Do not suggest cosmetic changes.
