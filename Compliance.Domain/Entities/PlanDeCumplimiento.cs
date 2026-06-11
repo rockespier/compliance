@@ -1,6 +1,7 @@
 using Compliance.Domain.Entities;
 using Compliance.Domain.Exceptions;
 
+namespace Compliance.Domain.Entities;
 public sealed class PlanDeCumplimiento
 {
     public Guid Id { get; private set; }

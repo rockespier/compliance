@@ -114,4 +114,4 @@ app.MapPost("/api/planes", async (
     }
 });
 
-app.Run();
+await app.RunAsync();
