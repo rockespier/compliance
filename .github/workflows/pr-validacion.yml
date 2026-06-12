@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -27,15 +27,21 @@ jobs:
         run: dotnet test --configuration Release --no-build
 
   codex-review:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build-and-test
 
     steps:
+      - name: Check bash on Windows runner
+        shell: pwsh
+        run: |
+          Get-Command bash
+          where.exe bash
+          bash --version
+    
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Codex Review
-        if: runner.os != 'Windows'
+      - name: Codex Review        
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -51,8 +57,4 @@ jobs:
             - Missing tests
             - Do not suggest cosmetic changes.
 
-      - name: Skip Codex Review on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Write-Host "Skipping Codex Review on Windows because openai/codex-action@v1 requires bash/WSL for this configuration."
+     
