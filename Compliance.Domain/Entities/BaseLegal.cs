@@ -7,6 +7,8 @@ public sealed class BaseLegal
     public string Descripcion { get; private set; }
     public string Organismo { get; private set; }// OEFA, MEM, MINEM, Tributario, Laboral
     public string Tipo { get; private set; }
+    public DateTime FechaPublicacion { get; private set; } = DateTime.UtcNow;
+    public bool EstaActiva { get; private set; } = true;
 
     public BaseLegal(Guid id, string codigo, string descripcion, string organismo, string tipo)
     {
