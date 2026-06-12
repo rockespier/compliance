@@ -16,7 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Para proyecto .NET
       - name: Restore
         run: dotnet restore
 
