@@ -10,13 +10,12 @@ permissions:
 
 jobs:
   build-and-test:
-    runs-on: self-hosted
+    runs-on: [self-hosted, windows]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Para proyecto .NET
       - name: Restore
         run: dotnet restore
 
@@ -25,23 +24,36 @@ jobs:
 
       - name: Test
         run: dotnet test --configuration Release --no-build
-
   codex-review:
-    runs-on: self-hosted
+    runs-on: [self-hosted, windows]
     needs: build-and-test
-
+  
     steps:
-      - name: Check bash on Windows runner
-        shell: pwsh
-        run: |
-          Get-Command bash
-          where.exe bash
-          bash --version
-    
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Codex Review        
+  
+      - name: Install Codex CLI
+        shell: pwsh
+        run: |
+          npm install -g @openai/codex @openai/codex-responses-api-proxy
+  
+      - name: Add npm global bin to PATH
+        shell: pwsh
+        run: |
+          $prefix = npm config get prefix
+          Write-Host "npm prefix: $prefix"
+          Add-Content -Path $env:GITHUB_PATH -Value $prefix
+  
+      - name: Verify Codex CLI
+        shell: pwsh
+        run: |
+          $prefix = npm config get prefix
+          Write-Host "npm prefix: $prefix"
+          Get-ChildItem -LiteralPath $prefix
+          where.exe codex
+          where.exe codex-responses-api-proxy
+  
+      - name: Codex Review
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -56,5 +68,3 @@ jobs:
             - Breaking changes
             - Missing tests
             - Do not suggest cosmetic changes.
-
-     
