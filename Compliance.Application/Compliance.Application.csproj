@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Compliance.Domain\Compliance.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\BaseLegal\" />
+  </ItemGroup>
+
 </Project>
